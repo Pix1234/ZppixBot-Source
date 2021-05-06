@@ -1,8 +1,7 @@
-from __future__ import print_function
+"""Controls the setup of the package by setuptools/pip."""
+from MirahezeBots.version import VERSION
 
 from setuptools import find_packages, setup
-
-from MirahezeBots.version import VERSION
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -10,10 +9,10 @@ with open('README.md') as readme_file:
 with open('CHANGELOG.md') as history_file:
     history = history_file.read()
 with open('requirements.txt') as requirements_file:
-    requirements = [req for req in requirements_file.readlines()]
+    requirements = list(requirements_file.readlines())
 
 with open('dev-requirements.txt') as dev_requirements_file:
-    dev_requirements = [req for req in dev_requirements_file.readlines()]
+    dev_requirements = list(dev_requirements_file.readlines())
 
 
 setup(
