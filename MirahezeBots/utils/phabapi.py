@@ -2,6 +2,7 @@
 
 from json import JSONDecodeError
 from urllib.parse import urlparse
+from warnings import warn
 
 from requests import Session
 
@@ -11,22 +12,27 @@ from requests_cache import install_cache, uninstall_cache
 BOLD = '\x02'
 
 
-def gettaskinfo(host, apikey, task=1, session=Session()):
+def gettaskinfo(host, apikey, task=None, tasks=None, session=Session(), querykey=None, limit=None):
     """Get information on a specific task."""
-    data = {
-        'api.token': apikey,
-        'constraints[ids][0]': task,
-    }
+    data = {'api.token': apikey, 'limit': limit}
+    if task and not tasks:
+        tasks = [task]
+        warn('Use of task is Deceprated. Use tasks. Tasks must be sent as an array.', DeprecationWarning)
+        idnum = 0
+    if tasks:
+        for taskid in tasks:
+            data[f'constraints[ids][{idnum}]'] = taskid
+            idnum = idnum + 1
+    if querykey:
+        data['queryKey'] = querykey
     response = session.post(
         url=f'{host}/maniphest.search',
-        data=data)
-    response = response.json()
+        data=data,
+    )
     try:
-        result = response.get('result').get('data')[0]
+        result = response.json().get('result').get('data')
     except AttributeError:
         return 'An error occurred while parsing the result.'
-    except IndexError:
-        return None
     install_cache('phab_user_cache', expire_after=2628002, allowable_methods=('POST'))  # a month
     ownerPHID = result.get('fields').get('ownerPHID')
     authorPHID = result.get('fields').get('authorPHID')
@@ -71,6 +77,7 @@ def gettaskinfo(host, apikey, task=1, session=Session()):
 
 def dophabsearch(host, apikey, querykey, limit=True, session=Session()):
     """Perform a maniphest search."""
+    warn('Use of dophabsearch is Deceprated. Use the querykey parameter of gettaskinfo()', DeprecationWarning)
     data = {
         'api.token': apikey,
         'queryKey': querykey,
